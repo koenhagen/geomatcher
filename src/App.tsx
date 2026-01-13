@@ -27,7 +27,7 @@ const App: React.FC = () => {
 
     useEffect(() => {
         if (gameComplete) return;
-        fetch('/ranks-2.csv')
+        fetch('/ranks.csv')
             .then(res => res.text())
             .then(text => {
                 const lines = text.trim().split('\n');
