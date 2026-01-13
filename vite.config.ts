@@ -4,5 +4,5 @@ import react from '@vitejs/plugin-react';
 
 export default defineConfig({
     plugins: [react(),tailwindcss()],
-    base: '/geomatcher/', // for GitHub Pages
+    base: '/', // for GitHub Pages
 });
