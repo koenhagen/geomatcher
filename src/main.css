@@ -1,2 +1,33 @@
 @import "tailwindcss";
 @tailwind utilities;
+
+
+:root {
+    --color-primary: #137fec;
+}
+
+.text-primary {
+    color: var(--color-primary);
+}
+
+.bg-primary {
+    background-color: var(--color-primary);
+}
+/* src/index.css */
+body {
+    font-family: "Plus Jakarta Sans", sans-serif;
+    background-color: #101922;
+    color: white;
+    user-select: none;
+}
+
+.custom-scrollbar::-webkit-scrollbar {
+    height: 4px;
+}
+.custom-scrollbar::-webkit-scrollbar-track {
+    background: transparent;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb {
+    background: #324d67;
+    border-radius: 10px;
+}
