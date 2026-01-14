@@ -236,7 +236,7 @@ const App: React.FC = () => {
                 />
 
                 <div className="px-4 pt-4">
-                    <h3 className="text-white text-lg font-bold leading-tight tracking-tight">Statistics</h3>
+                    <h3 className="text-white text-lg font-bold leading-tight tracking-tight">Today's Categories</h3>
                 </div>
 
                 <BucketGrid
