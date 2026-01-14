@@ -19,7 +19,8 @@ const App: React.FC = () => {
     const [countries, setCountries] = useState<Country[]>([]);
     const [buckets, setBuckets] = useState<Bucket[]>([]);
     const [showInstructions, setShowInstructions] = useState(true);
-    const [draggedCountryId, setDraggedCountryId] = useState<string | null>(null);
+    const [countryId, setCountryId] = useState<string | null>(null);
+
     const [round, setRound] = useState(1);
     const [roundResults, setRoundResults] = useState<RoundResult[]>([]);
     const [gameComplete, setGameComplete] = useState(false);
@@ -60,7 +61,7 @@ const App: React.FC = () => {
                 });
 
                 const shuffledCountries = parsed.sort(() => Math.random() - 0.5).slice(0, 6);
-                const shuffledStats = statColumns.sort(() => Math.random() - 0.5).slice(0, 5);
+                const shuffledStats = statColumns.sort(() => Math.random() - 0.5).slice(0, 6);
 
                 setCountries(
                     shuffledCountries.map((c, idx) => ({
@@ -88,21 +89,22 @@ const App: React.FC = () => {
         setShowInstructions(false);
     }, []);
 
-    const handleDragStart = useCallback((countryId: string) => {
-        setDraggedCountryId(countryId);
+    const handleDragStart = useCallback((id: string) => {
+        setCountryId(id);
     }, []);
 
     const handleDrop = useCallback((bucketId: string) => {
-        if (!draggedCountryId) return;
+        if (!countryId) return;
         setBuckets(prev =>
             prev.map(b =>
                 b.id === bucketId && b.assignedCountryId === null
-                    ? { ...b, assignedCountryId: draggedCountryId }
+                    ? { ...b, assignedCountryId: countryId }
                     : b
             )
         );
-        setDraggedCountryId(null);
-    }, [draggedCountryId]);
+        setCountryId(null);
+    }, [countryId]);
+
 
     const slotsFilled = useMemo(
         () => buckets.filter(b => b.assignedCountryId !== null).length,
@@ -146,7 +148,7 @@ const App: React.FC = () => {
         const handleMouseMove = (e: MouseEvent) => {
             setMousePos({ x: e.clientX, y: e.clientY });
         };
-        if (draggedCountryId) {
+        if (countryId) {
             window.addEventListener('mousemove', handleMouseMove);
         } else {
             setMousePos(null);
@@ -154,7 +156,7 @@ const App: React.FC = () => {
         return () => {
             window.removeEventListener('mousemove', handleMouseMove);
         };
-    }, [draggedCountryId]);
+    }, [countryId]);
 
     if (gameComplete) {
         const finalTotal = roundResults.reduce((acc, r) => acc + r.score, 0);
@@ -229,17 +231,19 @@ const App: React.FC = () => {
                     countries={countries}
                     buckets={buckets}
                     onDragStart={handleDragStart}
+                    countryId={countryId}
+                    setCountryId={setCountryId}
                 />
 
-                <div className="px-4 pt-4 pb-2">
-                    <h3 className="text-white text-lg font-bold leading-tight tracking-tight">Statistic Buckets</h3>
+                <div className="px-4 pt-4">
+                    <h3 className="text-white text-lg font-bold leading-tight tracking-tight">Statistics</h3>
                 </div>
 
                 <BucketGrid
                     buckets={buckets}
                     countries={countries}
                     onDrop={handleDrop}
-                    draggedCountryId={draggedCountryId}
+                    countryId={countryId}
                     mousePos={mousePos}
                 />
             </main>

@@ -6,7 +6,7 @@ interface BucketGridProps {
   buckets: Bucket[];
   countries: Country[];
   onDrop: (bucketId: string) => void;
-  draggedCountryId?: string | null;
+  countryId?: string | null;
   mousePos?: { x: number; y: number } | null;
 }
 
@@ -26,19 +26,11 @@ function getBucketColor(rank: number, min: number, max: number): string {
   }
 }
 
-function getScoreLabel(rank: number, min: number, max: number): { label: string; icon: string } {
-  if (max === min) return { label: 'Great', icon: 'thumb_up' };
-  const percent = (rank - min) / (max - min);
-  if (percent <= 0.33) return { label: 'Great', icon: 'thumb_up' };
-  if (percent <= 0.66) return { label: 'Okay', icon: 'remove' };
-  return { label: 'Poor', icon: 'thumb_down' };
-}
-
-export const BucketGrid: React.FC<BucketGridProps> = ({ buckets, countries, onDrop, draggedCountryId, mousePos }) => {
+export const BucketGrid: React.FC<BucketGridProps> = ({ buckets, countries, onDrop, countryId, mousePos }) => {
   const bucketRefs = useRef<(HTMLDivElement | null)[]>([]);
 
   useEffect(() => {
-    if (!draggedCountryId || !mousePos) return;
+    if (!countryId || !mousePos) return;
     const handleMouseUp = () => {
       bucketRefs.current.forEach((ref, idx) => {
         const bucket = buckets[idx];
@@ -56,10 +48,10 @@ export const BucketGrid: React.FC<BucketGridProps> = ({ buckets, countries, onDr
     };
     window.addEventListener('mouseup', handleMouseUp, { once: true });
     return () => window.removeEventListener('mouseup', handleMouseUp);
-  }, [draggedCountryId, mousePos, buckets, onDrop]);
+  }, [countryId, mousePos, buckets, onDrop]);
 
   return (
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 p-4">
+      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 p-4">
         {buckets.map((bucket, idx) => {
           const assignedCountry = countries.find(c => c.id === bucket.assignedCountryId);
           const ranks = countries.map(c => c.ranks[bucket.id]).filter((r): r is number => r !== undefined);
@@ -69,15 +61,12 @@ export const BucketGrid: React.FC<BucketGridProps> = ({ buckets, countries, onDr
           const scoreColor = assignedCountry && typeof assignedRank === 'number'
               ? getBucketColor(assignedRank, minRank, maxRank)
               : '';
-          const scoreInfo = assignedCountry && typeof assignedRank === 'number'
-              ? getScoreLabel(assignedRank, minRank, maxRank)
-              : null;
 
           return (
               <div
                   key={bucket.id}
                   ref={el => { bucketRefs.current[idx] = el; }}
-                  className={`relative flex flex-col items-center gap-2 p-3 rounded-2xl transition-all min-h-32.5 overflow-hidden
+                  className={`relative flex flex-col items-center gap-2 p-2 rounded-2xl transition-all min-h-20 overflow-hidden
               ${assignedCountry
                       ? 'border-2 bg-slate-900/60'
                       : 'border-2 border-dashed border-slate-700 bg-slate-900/40 hover:border-solid hover:border-primary/60'
@@ -95,11 +84,11 @@ export const BucketGrid: React.FC<BucketGridProps> = ({ buckets, countries, onDr
                     />
                 )}
 
-                <div className={`relative z-10 flex flex-col items-center gap-1
-  ${assignedCountry ? 'text-white' : 'text-slate-500'}
-`}>
+                <div className={`relative z-10 flex flex-row items-center gap-2 justify-start w-full
+              ${assignedCountry ? 'text-white' : 'text-slate-500'}
+            `}>
                   <span className="text-2xl">{bucket.emoji}</span>
-                  <p className="text-[10px] font-black uppercase tracking-widest text-center px-1">
+                  <p className="text-[10px] font-black uppercase tracking-widest px-1">
                     {bucket.label}
                   </p>
                 </div>
@@ -107,41 +96,17 @@ export const BucketGrid: React.FC<BucketGridProps> = ({ buckets, countries, onDr
                 {assignedCountry ? (
                     <div className="relative z-10 w-full flex flex-col gap-2">
                       <div
-                          className="w-full flex items-center justify-between p-2.5 rounded-xl bg-slate-800/80 backdrop-blur-sm"
+                          className="w-full flex items-center p-2.5 rounded-xl bg-slate-800/80 backdrop-blur-sm"
                       >
                         <div className="flex items-center gap-2 overflow-hidden">
                           <span className="text-lg">{assignedCountry.emoji}</span>
                           <span className="text-[11px] font-bold text-white truncate uppercase tracking-tight">
-                            {assignedCountry.name}
-                          </span>
-                        </div>
-                      </div>
-
-                      {/* Score badge */}
-                      <div
-                          className="flex items-center justify-between px-3 py-1.5 rounded-lg"
-                          style={{ backgroundColor: `${scoreColor}22` }}
-                      >
-                        <div className="flex items-center gap-1">
-                    <span
-                        className="material-symbols-outlined text-sm"
-                        style={{ color: scoreColor }}
-                    >
-                      {scoreInfo?.icon}
+                      {assignedCountry.name}
                     </span>
-                          <span
-                              className="text-[10px] font-bold uppercase tracking-wider"
-                              style={{ color: scoreColor }}
-                          >
-                      {scoreInfo?.label}
+                          <span className="text-lg font-black ml-2" style={{ color: scoreColor }}>
+                      #{assignedRank}
                     </span>
                         </div>
-                        <span
-                            className="text-lg font-black"
-                            style={{ color: scoreColor }}
-                        >
-                    #{assignedRank}
-                  </span>
                       </div>
                     </div>
                 ) : (
