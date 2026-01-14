@@ -66,7 +66,8 @@ export const CountryList: React.FC<CountryListProps> = ({
 
   return (
       <div
-          className="grid grid-rows-2 grid-flow-col auto-cols-fr gap-x-2 sm:gap-x-3 md:gap-x-4 lg:gap-x-6 gap-y-1.5 w-full px-4"
+          className="grid grid-rows-2 grid-flow-col auto-cols-fr gap-x-2 sm:gap-x-3 md:gap-x-4 lg:gap-x-6 gap-y-1.5 w-full px-4
+    sm:grid-rows-1 sm:grid-cols-6"
           style={{ position: 'relative', minHeight: '5.5rem' }}
       >
         {countries.map((country) => {
