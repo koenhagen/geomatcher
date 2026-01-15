@@ -17,12 +17,12 @@ export const InstructionCard: React.FC<InstructionCardProps> = ({ onDismiss }) =
           Drag countries to match their statistics. Aim for the <strong className="text-white font-bold">lowest total rank</strong> score to win!
         </p>
       </div>
-      <button 
-        onClick={onDismiss}
-        className="flex w-full items-center justify-center rounded-xl h-10 px-4 bg-primary/10 text-primary text-sm font-bold hover:bg-primary/20 transition-all border border-primary/20"
-      >
-        <span className="truncate">Dismiss Instructions</span>
-      </button>
+        <button
+            onClick={onDismiss}
+            className="flex w-full items-center justify-center rounded-xl h-10 px-4 bg-primary/20 text-primary text-sm font-bold hover:bg-primary/80 hover:text-white transition-all border border-primary cursor-pointer"
+        >
+            <span className="truncate">Dismiss Instructions</span>
+        </button>
     </div>
   );
 };

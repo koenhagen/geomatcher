@@ -7,6 +7,7 @@ interface GameFooterProps {
     round: number;
     maxRounds: number;
     onSubmit: () => void;
+    submitted: boolean;
 }
 
 export const GameFooter: React.FC<GameFooterProps> = ({
@@ -16,6 +17,7 @@ export const GameFooter: React.FC<GameFooterProps> = ({
                                                           round,
                                                           maxRounds,
                                                           onSubmit,
+                                                          submitted,
                                                       }) => {
     const isComplete = slotsFilled === totalSlots;
     const progressPercent = (slotsFilled / totalSlots) * 100;
@@ -58,9 +60,12 @@ export const GameFooter: React.FC<GameFooterProps> = ({
                     }`}
                 >
                     <span className="truncate">
-                        {isComplete
-                            ? (isFinalRound ? 'Finish' : 'Next Round')
-                            : `Fill ${totalSlots - slotsFilled} more to submit`}
+                        {!submitted
+                            ? (isComplete
+                                ? 'Submit'
+                                : `Fill ${totalSlots - slotsFilled} more to submit`)
+                            : (isFinalRound ? 'Finish' : 'Next Round')
+                        }
                     </span>
                 </button>
             </div>
