@@ -13,7 +13,7 @@ export const Header: React.FC<HeaderProps> = ({ round, maxRounds }) => {
         <span className="material-symbols-outlined">help</span>
       </div>
       <div className="flex flex-col items-center">
-        <h2 className="text-white text-lg font-bold leading-tight tracking-tight">Rank Match</h2>
+        <h2 className="text-white text-lg font-bold leading-tight tracking-tight">Geomatcher</h2>
         <span className="text-[10px] font-bold text-primary tracking-[0.2em] uppercase">ROUND {round} OF {maxRounds}</span>
       </div>
       <div className="text-white flex size-10 items-center justify-center rounded-full hover:bg-slate-800 transition-colors cursor-pointer">
