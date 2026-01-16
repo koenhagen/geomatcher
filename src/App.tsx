@@ -155,13 +155,6 @@ const App: React.FC = () => {
         setSubmitted(false);
     }, [round]);
 
-    const handlePlayAgain = useCallback(() => {
-        setRound(1);
-        setRoundResults([]);
-        setGameComplete(false);
-        setShowInstructions(true);
-    }, []);
-
     useEffect(() => {
         const handleMouseMove = (e: MouseEvent) => {
             setMousePos({ x: e.clientX, y: e.clientY });
@@ -180,7 +173,6 @@ const App: React.FC = () => {
         return (
             <FinalPage
                 roundResults={roundResults}
-                onPlayAgain={handlePlayAgain}
                 maxRounds={MAX_ROUNDS}
             />
         );
