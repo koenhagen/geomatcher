@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { RoundResult } from '../utils/types';
 import { getScoreForRank, rankToColor } from '../utils/score';
 
@@ -8,6 +8,7 @@ interface FinalPageProps {
 }
 
 export const FinalPage: React.FC<FinalPageProps> = ({ roundResults, maxRounds }) => {
+    const [snackbarOpen, setSnackbarOpen] = useState(false);
     const finalTotal = roundResults.reduce((acc, r) => acc + r.score, 0);
 
     const handleShare = async () => {
@@ -23,11 +24,12 @@ export const FinalPage: React.FC<FinalPageProps> = ({ roundResults, maxRounds })
         ];
         const text = lines.join('\n');
         await navigator.clipboard.writeText(text);
-        alert('Score copied to clipboard!');
+        setSnackbarOpen(true);
+        setTimeout(() => setSnackbarOpen(false), 2500);
     };
 
     return (
-        <div className="flex flex-col min-h-screen w-full max-w-7xl mx-auto bg-background-dark font-display">
+        <div className="flex flex-col min-h-screen w-full max-w-7xl mx-auto bg-background-dark font-display relative">
             <header className="sticky top-0 z-50 flex items-center bg-background-dark/80 backdrop-blur-md p-4 pb-2 justify-between border-b border-slate-800">
                 <div className="text-white flex size-10 items-center justify-center rounded-full hover:bg-slate-800 transition-colors cursor-pointer">
                     <span className="material-symbols-outlined">help</span>
@@ -89,14 +91,24 @@ export const FinalPage: React.FC<FinalPageProps> = ({ roundResults, maxRounds })
                         {finalTotal}
                     </p>
                 </div>
-
                 <button
                     onClick={handleShare}
-                    className="w-full max-w-md h-14 rounded-2xl bg-primary text-white font-black uppercase tracking-wider shadow-[0_8px_20px_rgba(19,127,236,0.3)] hover:scale-[1.02] active:scale-95 transition-all"
+                    className="w-full max-w-md h-14 rounded-2xl bg-primary text-white font-black uppercase tracking-wider text-lg px-4 py-2 shadow-[0_8px_20px_rgba(19,127,236,0.3)] hover:scale-[1.02] active:scale-95 transition-all flex flex-col items-center justify-center"
                 >
-                    Share Score (clipboard)
+                    Share
+                    <span className="text-xs font-normal text-slate-200 mt-1 tracking-normal lowercase opacity-80">
+                        (save to clipboard)
+                    </span>
                 </button>
             </main>
+            {snackbarOpen && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 animate-fade-in">
+                    <div className="bg-slate-900 text-white px-8 py-6 rounded-2xl shadow-2xl border-2 border-primary flex items-center gap-3 text-lg font-bold">
+                        <span className="material-symbols-outlined text-primary text-3xl">check_circle</span>
+                        Saved to clipboard!
+                    </div>
+                </div>
+            )}
         </div>
     );
 };

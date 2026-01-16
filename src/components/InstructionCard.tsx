@@ -14,7 +14,7 @@ export const InstructionCard: React.FC<InstructionCardProps> = ({ onDismiss }) =
           <p className="text-white text-base font-bold leading-tight">How to Play</p>
         </div>
         <p className="text-slate-400 text-sm font-medium leading-relaxed">
-          Drag countries to match their statistics. Aim for the <strong className="text-white font-bold">lowest total rank</strong> score to win!
+          Drag countries to match their statistics. Aim for the <strong className="text-white font-bold">highest total rank</strong> score to win!
         </p>
       </div>
         <button
