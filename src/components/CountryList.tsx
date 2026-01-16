@@ -82,7 +82,7 @@ export const CountryList: React.FC<CountryListProps> = ({
               }}
               className="rounded-xl border-2 shadow-lg p-1 flex flex-col items-center justify-center gap-0.5 bg-slate-800 border-slate-700"
           >
-            <span className="text-lg select-none">{dragCountry.emoji}</span>
+            <span className="text-2xl select-none">{dragCountry.emoji}</span>
             <p className="text-white text-[10px] font-extrabold text-center uppercase tracking-wide select-none">
               {dragCountry.name}
             </p>
@@ -117,7 +117,7 @@ export const CountryList: React.FC<CountryListProps> = ({
                             : 'bg-slate-800 border-slate-700 cursor-grab active:cursor-grabbing hover:scale-105 hover:border-primary/50 border-b-4 border-b-primary/40'
                     }`}
                 >
-                  <span className="text-lg select-none">{country.emoji}</span>
+                  <span className="text-3xl select-none">{country.emoji}</span>
                   <p className={`text-[10px] font-extrabold text-center uppercase tracking-wide select-none ${isSelected ? 'text-primary' : 'text-white'}`}>
                     {country.name}
                   </p>

@@ -1,19 +1,64 @@
-import React, {useCallback, useEffect, useMemo, useState} from 'react';
-import {Header} from './components/Header';
-import {InstructionCard} from './components/InstructionCard';
-import {CountryList} from './components/CountryList';
-import {BucketGrid} from './components/BucketGrid';
-import {GameFooter} from './components/GameFooter';
-import {FinalPage} from './components/FinalPage';
-import {Bucket, Country, RoundResult} from './utils/types';
-import {getScoreForRank} from './utils/score';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import { Header } from './components/Header';
+import { InstructionCard } from './components/InstructionCard';
+import { CountryList } from './components/CountryList';
+import { BucketGrid } from './components/BucketGrid';
+import { GameFooter } from './components/GameFooter';
+import { FinalPage } from './components/FinalPage';
+import { Bucket, Country, RoundResult } from './utils/types';
+import { getScoreForRank } from './utils/score';
+import { seededShuffle } from './utils/shuffle';
 
 const MAX_ROUNDS = 3;
+const COOKIE_KEY = 'geomatcher_progress';
+const BANNER_COOKIE_KEY = 'geomatcher_banner_dismissed';
+
+function setBannerDismissedCookie() {
+    document.cookie = `${BANNER_COOKIE_KEY}=1; path=/; max-age=31536000`;
+}
+
+function getBannerDismissedCookie() {
+    return document.cookie.includes(`${BANNER_COOKIE_KEY}=1`);
+}
+
+const getSeed = (round: number) => {
+    const dateStr = new Date().toISOString().slice(0, 10);
+    return hashCode(dateStr + '-' + round);
+};
+
+function hashCode(str: string): number {
+    let hash = 0, i, chr;
+    for (i = 0; i < str.length; i++) {
+        chr = str.charCodeAt(i);
+        hash = ((hash << 5) - hash) + chr;
+        hash |= 0;
+    }
+    return hash;
+}
+
+function setProgressCookie(data: any) {
+    document.cookie = `${COOKIE_KEY}=${encodeURIComponent(JSON.stringify(data))}; path=/; max-age=86400`;
+}
+
+function getProgressCookie() {
+    const match = document.cookie.match(new RegExp('(^| )' + COOKIE_KEY + '=([^;]+)'));
+    if (match && typeof match[2] === 'string') {
+        try {
+            const data =  JSON.parse(decodeURIComponent(match[2]));
+            if (data.date === new Date().toISOString().slice(0, 10)) {
+                return data;
+            }
+        } catch {
+            return null;
+        }
+    }
+    return null;
+}
 
 const App: React.FC = () => {
     const [countries, setCountries] = useState<Country[]>([]);
     const [buckets, setBuckets] = useState<Bucket[]>([]);
-    const [showInstructions, setShowInstructions] = useState(true);
+    const [showInstructions, setShowInstructions] = useState(() => !getBannerDismissedCookie());
     const [countryId, setCountryId] = useState<string | null>(null);
 
     const [round, setRound] = useState(1);
@@ -22,9 +67,27 @@ const App: React.FC = () => {
     const [mousePos, setMousePos] = useState<{ x: number; y: number } | null>(null);
 
     const [submitted, setSubmitted] = useState(false);
+    const [restored, setRestored] = useState(false);
 
     useEffect(() => {
+        const saved = getProgressCookie();
+        if (saved) {
+            setRound(saved.round ?? 1);
+            setRoundResults(saved.roundResults ?? []);
+            setGameComplete(saved.gameComplete ?? false);
+            setSubmitted(false);
+            if (saved.countries && saved.buckets) {
+                setCountries(saved.countries);
+                setBuckets(saved.buckets);
+                setRestored(true);
+            }
+        }
+    }, []);
+
+// Fetch data only if not restored from cookie and after round is set
+    useEffect(() => {
         if (gameComplete) return;
+        if (restored) return;
         fetch(`/geomatcher/ranks.csv`)
             .then(res => res.text())
             .then(text => {
@@ -55,8 +118,9 @@ const App: React.FC = () => {
                     return obj;
                 });
 
-                const shuffledCountries = parsed.sort(() => Math.random() - 0.5).slice(0, 6);
-                const shuffledStats = statColumns.sort(() => Math.random() - 0.5).slice(0, 6);
+                const seed = getSeed(round);
+                const shuffledCountries = seededShuffle(parsed, seed).slice(0, 6);
+                const shuffledStats = seededShuffle(statColumns, seed).slice(0, 6);
 
                 setCountries(
                     shuffledCountries.map((c, idx) => ({
@@ -77,11 +141,13 @@ const App: React.FC = () => {
                     }))
                 );
             });
-    }, [round, gameComplete]);
+    }, [round, gameComplete, restored]);
 
     const handleDismissInstructions = useCallback(() => {
         setShowInstructions(false);
+        setBannerDismissedCookie();
     }, []);
+
 
     const handleDragStart = useCallback((id: string) => {
         setCountryId(id);
@@ -104,7 +170,6 @@ const App: React.FC = () => {
         [buckets]
     );
 
-    // Calculate per-bucket ranks for the current round
     const bucketRanks = useMemo(() => {
         return buckets.map(bucket => {
             if (!bucket.assignedCountryId) return 0;
@@ -119,7 +184,6 @@ const App: React.FC = () => {
         });
     }, [buckets, countries]);
 
-    // Calculate scores from ranks
     const bucketScores = useMemo(() => {
         const totalCountries = countries.length;
         return bucketRanks.map(rank => getScoreForRank(rank, totalCountries));
@@ -145,9 +209,22 @@ const App: React.FC = () => {
 
         if (round >= MAX_ROUNDS) {
             setGameComplete(true);
+            setProgressCookie({
+                round,
+                roundResults: updatedResults,
+                gameComplete: true,
+                date: new Date().toISOString().slice(0, 10),
+            });
         } else {
             setRound(round + 1);
             setSubmitted(false);
+            setRestored(false);
+            setProgressCookie({
+                round: round + 1,
+                roundResults: updatedResults,
+                gameComplete: false,
+                date: new Date().toISOString().slice(0, 10),
+            });
         }
     }, [submitted, slotsFilled, buckets.length, round, roundScore, bucketRanks, roundResults]);
 
@@ -179,8 +256,6 @@ const App: React.FC = () => {
     }
 
     if (!countries.length || !buckets.length) return <div>Loading...</div>;
-
-    // ...imports
 
     return (
         <div className="flex flex-col min-h-screen w-full bg-background-dark font-display">
@@ -239,7 +314,6 @@ const App: React.FC = () => {
             </GameFooter>
         </div>
     );
-
 };
 
 export default App;
