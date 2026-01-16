@@ -24,7 +24,7 @@ export const GameFooter: React.FC<GameFooterProps> = ({
     const isFinalRound = round >= maxRounds;
 
     return (
-        <div className="fixed bottom-0 left-0 w-full bg-background-dark/90 backdrop-blur-xl border-t border-slate-800 p-3 pb-4 space-y-4 z-100 shadow-[0_-10px_30px_rgba(0,0,0,0.5)]">
+        <div className="fixed bottom-0 left-0 w-full bg-background-dark/90 backdrop-blur-xl border-t border-slate-800 p-3 pb-4 space-y-4 z-30 shadow-[0_-4px_12px_rgba(0,0,0,0.25)]">
             <div className="max-w-7xl mx-auto px-1">
                 {children}
             </div>

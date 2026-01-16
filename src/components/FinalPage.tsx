@@ -19,7 +19,7 @@ export const FinalPage: React.FC<FinalPageProps> = ({ roundResults, maxRounds })
             ),
             '',
             `Final Score: ${finalTotal}`,
-            'https://ai.studio/apps/temp/1'
+            'https://koenhagen.github.io/geomatcher/'
         ];
         const text = lines.join('\n');
         await navigator.clipboard.writeText(text);

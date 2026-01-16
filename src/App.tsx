@@ -183,7 +183,7 @@ const App: React.FC = () => {
     // ...imports
 
     return (
-        <div className="flex flex-col min-h-screen w-full max-w-7xl mx-auto bg-background-dark font-display">
+        <div className="flex flex-col min-h-screen w-full bg-background-dark font-display">
             <Header
                 round={round}
                 maxRounds={MAX_ROUNDS}
@@ -191,7 +191,7 @@ const App: React.FC = () => {
                 slotsFilled={slotsFilled}
                 totalSlots={buckets.length}
             />
-            <main className="flex-1 overflow-y-auto pb-80 custom-scrollbar">
+            <main className="flex-1 max-w-7xl mx-auto overflow-y-auto pb-80 custom-scrollbar">
                 {showInstructions && (
                     <div className="px-4 pt-4">
                         <InstructionCard onDismiss={handleDismissInstructions} />
