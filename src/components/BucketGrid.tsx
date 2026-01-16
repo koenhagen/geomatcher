@@ -1,6 +1,7 @@
 // src/components/BucketGrid.tsx
 import React, { useRef, useEffect } from 'react';
-import { Country, Bucket } from '../types';
+import { Country, Bucket } from '../utils/types';
+import {getScoreForRank} from "../utils/score";
 
 interface BucketGridProps {
     buckets: Bucket[];
@@ -11,15 +12,19 @@ interface BucketGridProps {
     submitted?: boolean;
 }
 
-function getBucketColor(rank: number, min: number, max: number): string {
-    if (max === min) return '#22c55e';
-    const percent = (rank - min) / (max - min);
+// Map rank (1 = best, total = worst) to a color from green to red
+function getBucketColor(rank: number, total: number): string {
+    if (total <= 1) return '#22c55e';
+    const percent = (rank - 1) / (total - 1);
+    // Green to yellow to red
     if (percent <= 0.5) {
+        // Green to yellow
         const r = 34 + percent * 2 * (234 - 34);
         const g = 197 + percent * 2 * (171 - 197);
         const b = 94 + percent * 2 * (8 - 94);
         return `rgb(${Math.round(r)},${Math.round(g)},${Math.round(b)})`;
     } else {
+        // Yellow to red
         const r = 234 + (percent - 0.5) * 2 * (239 - 234);
         const g = 171 - (percent - 0.5) * 2 * (171 - 68);
         const b = 8 + (percent - 0.5) * 2 * (68 - 8);
@@ -62,13 +67,21 @@ export const BucketGrid: React.FC<BucketGridProps> = ({
         <div className="grid grid-cols-2 grid-rows-3 sm:grid-cols-3 sm:grid-rows-2 gap-3 p-4">
             {buckets.map((bucket, idx) => {
                 const assignedCountry = countries.find(c => c.id === bucket.assignedCountryId);
-                const ranks = countries.map(c => c.ranks[bucket.id]).filter((r): r is number => r !== undefined);
-                const minRank = ranks.length ? Math.min(...ranks) : 0;
-                const maxRank = ranks.length ? Math.max(...ranks) : 0;
-                const assignedRank = assignedCountry?.ranks[bucket.id];
-                const scoreColor = assignedCountry && typeof assignedRank === 'number'
-                    ? getBucketColor(assignedRank, minRank, maxRank)
+
+                // Compute 1-based rank for assigned country in this bucket
+                const allRanks = countries.map(c => c.ranks[bucket.id]).filter((v): v is number => v !== undefined);
+                const sortedRanks = [...allRanks].sort((a, b) => a - b);
+                const assignedRankValue = assignedCountry?.ranks[bucket.id];
+                const rankPosition = assignedRankValue !== undefined
+                    ? sortedRanks.indexOf(assignedRankValue) + 1
+                    : undefined;
+                const totalCountries = countries.length;
+
+                const scoreColor = assignedCountry && typeof rankPosition === 'number'
+                    ? getBucketColor(rankPosition, totalCountries)
                     : '';
+
+                const score = getScoreForRank(rankPosition, totalCountries);
 
                 // Only show colored border and glow after submit
                 const borderStyle =
@@ -78,7 +91,7 @@ export const BucketGrid: React.FC<BucketGridProps> = ({
                             boxShadow: `0 0 20px ${scoreColor}33, inset 0 0 30px ${scoreColor}11`
                         }
                         : assignedCountry && !submitted
-                            ? { borderColor: '#1e293b' } // Tailwind's slate-800
+                            ? { borderColor: '#1e293b' }
                             : undefined;
 
                 return (
@@ -109,6 +122,7 @@ export const BucketGrid: React.FC<BucketGridProps> = ({
                             </p>
                         </div>
 
+
                         {assignedCountry ? (
                             <div className="relative z-10 w-full flex flex-col gap-2">
                                 <div className="w-full flex items-center p-2.5 rounded-xl bg-slate-800/80 backdrop-blur-sm">
@@ -124,7 +138,7 @@ export const BucketGrid: React.FC<BucketGridProps> = ({
                                                 className="text-lg font-black"
                                                 style={{ color: scoreColor }}
                                             >
-                        #{assignedRank}
+                        {score}
                     </span>
                                         )}
                                     </div>

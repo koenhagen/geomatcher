@@ -1,5 +1,5 @@
 import React, { useState, useRef } from 'react';
-import { Country, Bucket } from '../types';
+import { Country, Bucket } from '../utils/types';
 
 interface CountryListProps {
   countries: Country[];

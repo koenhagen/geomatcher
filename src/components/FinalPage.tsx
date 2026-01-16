@@ -1,19 +1,30 @@
-// src/components/FinalPage.tsx
 import React from 'react';
-
-type RoundResult = {
-    round: number;
-    score: number;
-};
+import { RoundResult } from '../utils/types';
+import { getScoreForRank, rankToColor } from '../utils/score';
 
 interface FinalPageProps {
     roundResults: RoundResult[];
-    onPlayAgain: () => void;
     maxRounds: number;
 }
 
-export const FinalPage: React.FC<FinalPageProps> = ({ roundResults, onPlayAgain, maxRounds }) => {
+export const FinalPage: React.FC<FinalPageProps> = ({ roundResults, maxRounds }) => {
     const finalTotal = roundResults.reduce((acc, r) => acc + r.score, 0);
+
+    const handleShare = async () => {
+        const lines = [
+            `Geomatcher ${new Date().toLocaleDateString()}`,
+            '',
+            ...roundResults.map(r =>
+                `Round ${r.round}: ${r.bucketRanks.map(rank => rankToColor(rank, r.bucketRanks.length)).join(' ')}`
+            ),
+            '',
+            `Final Score: ${finalTotal}`,
+            'https://ai.studio/apps/temp/1'
+        ];
+        const text = lines.join('\n');
+        await navigator.clipboard.writeText(text);
+        alert('Score copied to clipboard!');
+    };
 
     return (
         <div className="flex flex-col min-h-screen w-full max-w-7xl mx-auto bg-background-dark font-display">
@@ -38,18 +49,36 @@ export const FinalPage: React.FC<FinalPageProps> = ({ roundResults, onPlayAgain,
                     <p className="text-slate-400 text-sm">Here's how you did across all rounds</p>
                 </div>
 
-                <div className="w-full max-w-md space-y-3">
-                    {roundResults.map((result) => (
-                        <div
-                            key={result.round}
-                            className="flex items-center justify-between p-4 bg-slate-800/60 rounded-xl border border-slate-700"
-                        >
-                            <span className="text-sm font-bold text-slate-400 uppercase tracking-wider">
-                                Round {result.round}
-                            </span>
-                            <span className="text-xl font-black text-white">{result.score}</span>
-                        </div>
-                    ))}
+                <div className="w-full max-w-xl bg-slate-900/80 rounded-2xl p-6 mb-8 shadow-lg">
+                    <h2 className="text-xl font-bold text-white mb-4">Round Breakdown</h2>
+                    <table className="w-full text-left text-white text-sm">
+                        <thead>
+                        <tr>
+                            <th className="py-1 px-2">Round</th>
+                            <th className="py-1 px-2">Score</th>
+                            <th className="py-1 px-2">Bucket Ranks</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        {roundResults.map(r => (
+                            <tr key={r.round} className="border-t border-slate-800">
+                                <td className="py-1 px-2 font-bold">#{r.round}</td>
+                                <td className="py-1 px-2">{r.score}</td>
+                                <td className="py-1 px-2">
+                                    {r.bucketRanks.map((rank, i) => (
+                                        <span
+                                            key={i}
+                                            className="inline-block text-xl align-middle mr-1"
+                                            title={`Rank: ${rank}, Score: ${getScoreForRank(rank, r.bucketRanks.length)}`}
+                                        >
+                                            {rankToColor(rank, r.bucketRanks.length)}
+                                        </span>
+                                    ))}
+                                </td>
+                            </tr>
+                        ))}
+                        </tbody>
+                    </table>
                 </div>
 
                 <div className="text-center space-y-1 p-6 bg-slate-800/40 rounded-2xl border border-slate-700 w-full max-w-md">
@@ -59,14 +88,13 @@ export const FinalPage: React.FC<FinalPageProps> = ({ roundResults, onPlayAgain,
                     <p className="text-5xl font-black text-primary drop-shadow-[0_0_20px_rgba(19,127,236,0.4)]">
                         {finalTotal}
                     </p>
-                    <p className="text-xs text-slate-500 mt-2">Lower is better!</p>
                 </div>
 
                 <button
-                    onClick={onPlayAgain}
+                    onClick={handleShare}
                     className="w-full max-w-md h-14 rounded-2xl bg-primary text-white font-black uppercase tracking-wider shadow-[0_8px_20px_rgba(19,127,236,0.3)] hover:scale-[1.02] active:scale-95 transition-all"
                 >
-                    Play Again
+                    Share Score
                 </button>
             </main>
         </div>

@@ -13,3 +13,9 @@ export type Bucket = {
     emoji: string;
     assignedCountryId: string | null;
 };
+
+export type RoundResult = {
+    round: number;
+    score: number;
+    bucketRanks: number[];
+};

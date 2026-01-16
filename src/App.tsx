@@ -1,18 +1,12 @@
-// src/App.tsx
-import React, { useEffect, useState, useCallback, useMemo } from 'react';
-import { Header } from './components/Header';
-import { InstructionCard } from './components/InstructionCard';
-import { CountryList } from './components/CountryList';
-import { BucketGrid } from './components/BucketGrid';
-import { GameFooter } from './components/GameFooter';
-import {FinalPage} from "./components/FinalPage";
-import { Country, Bucket } from './types';
-
-
-type RoundResult = {
-    round: number;
-    score: number;
-};
+import React, {useCallback, useEffect, useMemo, useState} from 'react';
+import {Header} from './components/Header';
+import {InstructionCard} from './components/InstructionCard';
+import {CountryList} from './components/CountryList';
+import {BucketGrid} from './components/BucketGrid';
+import {GameFooter} from './components/GameFooter';
+import {FinalPage} from './components/FinalPage';
+import {Bucket, Country, RoundResult} from './utils/types';
+import {getScoreForRank} from './utils/score';
 
 const MAX_ROUNDS = 3;
 
@@ -38,20 +32,18 @@ const App: React.FC = () => {
                 if (lines.length < 3) return;
 
                 const header = lines[0];
-                const emojiRow = lines[1]; // Second row contains stat emojis
-                const dataRows = lines.slice(2); // Skip header and emoji row
+                const emojiRow = lines[1];
+                const dataRows = lines.slice(2);
 
                 if (!header || !emojiRow) return;
                 const columns = header.split(',');
                 const emojiValues = emojiRow.split(',');
 
-                // Create stat emoji map (column name -> emoji)
                 const statEmojiMap: Record<string, string> = {};
                 columns.forEach((col, i) => {
                     statEmojiMap[col] = emojiValues[i] || '';
                 });
 
-                // Filter out non-stat columns
                 const statColumns = columns.filter(col =>
                     col !== 'Abbreviation' && col !== 'Country' && col !== 'Emoji'
                 );
@@ -87,7 +79,6 @@ const App: React.FC = () => {
             });
     }, [round, gameComplete]);
 
-    // ... rest of the component remains the same
     const handleDismissInstructions = useCallback(() => {
         setShowInstructions(false);
     }, []);
@@ -108,19 +99,35 @@ const App: React.FC = () => {
         setCountryId(null);
     }, [countryId]);
 
-
     const slotsFilled = useMemo(
         () => buckets.filter(b => b.assignedCountryId !== null).length,
         [buckets]
     );
 
-    const roundScore = useMemo(() => {
-        return buckets.reduce((acc, bucket) => {
-            if (!bucket.assignedCountryId) return acc;
+    // Calculate per-bucket ranks for the current round
+    const bucketRanks = useMemo(() => {
+        return buckets.map(bucket => {
+            if (!bucket.assignedCountryId) return 0;
             const country = countries.find(c => c.id === bucket.assignedCountryId);
-            return acc + (country?.ranks[bucket.id] || 0);
-        }, 0);
+            if (!country) return 0;
+            const allRanks = countries.map(c => c.ranks[bucket.id]).filter((v): v is number => v !== undefined);
+            const sortedRanks = [...allRanks].sort((a, b) => a - b);
+            const assignedRankValue = country.ranks[bucket.id];
+            return assignedRankValue !== undefined
+                ? sortedRanks.indexOf(assignedRankValue) + 1
+                : 0;
+        });
     }, [buckets, countries]);
+
+    // Calculate scores from ranks
+    const bucketScores = useMemo(() => {
+        const totalCountries = countries.length;
+        return bucketRanks.map(rank => getScoreForRank(rank, totalCountries));
+    }, [bucketRanks, countries.length]);
+
+    const roundScore = useMemo(() => {
+        return bucketScores.reduce((acc, score) => acc + score, 0);
+    }, [bucketScores]);
 
     const totalScore = useMemo(() => {
         return roundResults.reduce((acc, r) => acc + r.score, 0) + (submitted ? roundScore : 0);
@@ -131,9 +138,8 @@ const App: React.FC = () => {
             setSubmitted(true);
             return;
         }
-        // Only advance round if already submitted
         if (slotsFilled < buckets.length) return;
-        const newResult: RoundResult = { round, score: roundScore };
+        const newResult: RoundResult = { round, score: roundScore, bucketRanks };
         const updatedResults = [...roundResults, newResult];
         setRoundResults(updatedResults);
 
@@ -141,9 +147,9 @@ const App: React.FC = () => {
             setGameComplete(true);
         } else {
             setRound(round + 1);
-            setSubmitted(false); // Reset for next round
+            setSubmitted(false);
         }
-    }, [submitted, slotsFilled, buckets.length, round, roundScore, roundResults]);
+    }, [submitted, slotsFilled, buckets.length, round, roundScore, bucketRanks, roundResults]);
 
     useEffect(() => {
         setSubmitted(false);
