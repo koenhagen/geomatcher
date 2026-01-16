@@ -94,7 +94,7 @@ export const FinalPage: React.FC<FinalPageProps> = ({ roundResults, maxRounds })
                     onClick={handleShare}
                     className="w-full max-w-md h-14 rounded-2xl bg-primary text-white font-black uppercase tracking-wider shadow-[0_8px_20px_rgba(19,127,236,0.3)] hover:scale-[1.02] active:scale-95 transition-all"
                 >
-                    Share Score
+                    Share Score (clipboard)
                 </button>
             </main>
         </div>
