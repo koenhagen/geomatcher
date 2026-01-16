@@ -180,33 +180,23 @@ const App: React.FC = () => {
 
     if (!countries.length || !buckets.length) return <div>Loading...</div>;
 
+    // ...imports
+
     return (
         <div className="flex flex-col min-h-screen w-full max-w-7xl mx-auto bg-background-dark font-display">
-            <Header round={round} maxRounds={MAX_ROUNDS} />
-
+            <Header
+                round={round}
+                maxRounds={MAX_ROUNDS}
+                totalScore={totalScore}
+                slotsFilled={slotsFilled}
+                totalSlots={buckets.length}
+            />
             <main className="flex-1 overflow-y-auto pb-80 custom-scrollbar">
                 {showInstructions && (
                     <div className="px-4 pt-4">
                         <InstructionCard onDismiss={handleDismissInstructions} />
                     </div>
                 )}
-
-                <div className="px-4 pt-6 pb-2">
-                    <h3 className="text-white text-lg font-bold leading-tight tracking-tight flex items-center gap-2">
-                        Available Countries
-                        <span className="text-xs bg-slate-800 px-2 py-0.5 rounded-full text-slate-500 uppercase font-semibold tracking-wider">
-                            {countries.length - slotsFilled} LEFT
-                        </span>
-                    </h3>
-                </div>
-
-                <CountryList
-                    countries={countries}
-                    buckets={buckets}
-                    onDragStart={handleDragStart}
-                    countryId={countryId}
-                    setCountryId={setCountryId}
-                />
 
                 <div className="px-4 pt-4">
                     <h3 className="text-white text-lg font-bold leading-tight tracking-tight">Today's Categories</h3>
@@ -230,9 +220,26 @@ const App: React.FC = () => {
                 maxRounds={MAX_ROUNDS}
                 onSubmit={handleSubmit}
                 submitted={submitted}
-            />
+            >
+                <div className="px-4 pb-2">
+                    <h3 className="text-white text-lg font-bold leading-tight tracking-tight flex items-center gap-2">
+                        Available Countries
+                        <span className="text-xs bg-slate-800 px-2 py-0.5 rounded-full text-slate-500 uppercase font-semibold tracking-wider">
+                            {countries.length - slotsFilled} LEFT
+                        </span>
+                    </h3>
+                </div>
+                <CountryList
+                    countries={countries}
+                    buckets={buckets}
+                    onDragStart={handleDragStart}
+                    countryId={countryId}
+                    setCountryId={setCountryId}
+                />
+            </GameFooter>
         </div>
     );
+
 };
 
 export default App;
