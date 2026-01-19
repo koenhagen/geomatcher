@@ -119,11 +119,19 @@ const App: React.FC = () => {
                 });
 
                 const seed = getSeed(round);
-                const shuffledCountries = seededShuffle(parsed, seed).slice(0, 6);
+                const shuffledCountriesPool = seededShuffle(parsed, seed);
                 const shuffledStats = seededShuffle(statColumns, seed).slice(0, 6);
 
+                const hasAllStats = (c: Record<string, string>) =>
+                    shuffledStats.every(stat => c[stat] !== undefined && c[stat] !== '' && !isNaN(Number(c[stat])));
+
+                const validCountries: Record<string, string>[] = [];
+                for (const c of shuffledCountriesPool) {
+                    if (hasAllStats(c)) validCountries.push(c);
+                    if (validCountries.length === 6) break;
+                }
                 setCountries(
-                    shuffledCountries.map((c, idx) => ({
+                    validCountries.map((c, idx) => ({
                         id: c.Abbreviation || c.Country || String(idx),
                         name: c.Country || '',
                         abbreviation: c.Abbreviation || '',
