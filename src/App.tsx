@@ -88,7 +88,7 @@ const App: React.FC = () => {
     useEffect(() => {
         if (gameComplete) return;
         if (restored) return;
-        fetch(`/geomatcher/ranks.csv`)
+        fetch(`/ranks.csv`)
             .then(res => res.text())
             .then(text => {
                 const lines = text.trim().split('\n');
